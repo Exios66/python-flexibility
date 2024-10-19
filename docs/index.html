@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <meta name="description" content="Test your knowledge on various topics with our interactive Quiz App">
+    <link rel="icon" href="/docs/favicon.ico">
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/docs/src/index.js" as="script">
+    <link rel="preload" href="/docs/src/App.js" as="script">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <!-- React Router -->
+    <script src="https://unpkg.com/react-router-dom@5.2.0/umd/react-router-dom.min.js"></script>
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Custom styles -->
+    <style>
+        /* Add any custom styles here */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 1.5rem;
+        }
+    </style>
+    <!-- Base tag for GitHub Pages -->
+    <base href="/your-repo-name/">
+</head>
+<body>
+    <div id="root">
+        <div class="loading">Loading...</div>
+    </div>
+
+    <!-- Application scripts -->
+    <script type="text/babel" src="/docs/src/index.js"></script>
+    <script type="text/babel" src="/docs/src/App.js"></script>
+    <script type="text/babel" src="/docs/src/Home.js"></script>
+    <script type="text/babel" src="/docs/src/QuizApp.js"></script>
+
+    <!-- Initialize the app -->
+    <script type="text/babel">
+        const { BrowserRouter, Route, Switch } = ReactRouterDOM;
+
+        ReactDOM.render(
+            <React.StrictMode>
+                <BrowserRouter basename="/your-repo-name">
+                    <App />
+                </BrowserRouter>
+            </React.StrictMode>,
+            document.getElementById('root')
+        );
+    </script>
+
+    <!-- GitHub Pages 404 redirect script -->
+    <script>
+        (function(){
+            var redirect = sessionStorage.redirect;
+            delete sessionStorage.redirect;
+            if (redirect && redirect != location.href) {
+                history.replaceState(null, null, redirect);
+            }
+        })();
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/docs/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
