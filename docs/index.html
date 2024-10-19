@@ -70,6 +70,20 @@
     <script type="text/babel" src="/docs/src/pages/Results.js"></script>
     <script type="text/babel" src="/docs/src/components/NotFound.js"></script>
 
+    <!-- UI Components -->
+    <script type="text/babel" src="/docs/src/components/ui/alert.jsx"></script>
+    <script type="text/babel" src="/docs/src/components/ui/button.jsx"></script>
+    <script type="text/babel" src="/docs/src/components/ui/card.jsx"></script>
+    <script type="text/babel" src="/docs/src/components/ui/label.jsx"></script>
+    <script type="text/babel" src="/docs/src/components/ui/progress.jsx"></script>
+    <script type="text/babel" src="/docs/src/components/ui/radio-group.jsx"></script>
+    <script type="text/babel" src="/docs/src/components/ui/switch.jsx"></script>
+    <script type="text/babel" src="/docs/src/components/ui/toaster.jsx"></script>
+    <script type="text/babel" src="/docs/src/components/ui/use-toast.js"></script>
+
+    <!-- Theme Provider -->
+    <script type="text/babel" src="/docs/src/components/ThemeProvider.js"></script>
+
     <!-- Initialize the app -->
     <script type="text/babel">
         const { BrowserRouter, Route, Switch } = ReactRouterDOM;
@@ -77,7 +91,9 @@
         ReactDOM.render(
             <React.StrictMode>
                 <BrowserRouter basename="/your-repo-name">
-                    <App />
+                    <ThemeProvider>
+                        <App />
+                    </ThemeProvider>
                 </BrowserRouter>
             </React.StrictMode>,
             document.getElementById('root')

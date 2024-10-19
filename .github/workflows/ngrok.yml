@@ -1,0 +1,18 @@
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  ngrok:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ngrok/ngrok-action@v5
+        with:
+          authtoken: ${{ secrets.NGROK_AUTH_TOKEN }}
+          region: us
+          port: 5000
+          protocol: http
+          inspect: true
+          bind_tls: true
