@@ -1,0 +1,20 @@
+{
+  "name": "my-ngrok-project",
+  "version": "1.0.0",
+  "description": "A project using Ngrok for tunneling",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "tunnel": "ngrok http 5000"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "ngrok": "^4.3.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
