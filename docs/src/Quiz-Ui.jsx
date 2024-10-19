@@ -1,218 +1,75 @@
-import React, { useState, useEffect } from 'react';
-import { Moon, Sun, AlertCircle, ChevronRight, ArrowLeft } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 
-const QuizApp = ({ darkMode, toggleDarkMode, onComplete }) => {
-  const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+const QuizUI = () => {
+  const [question, setQuestion] = useState('');
+  const [choices, setChoices] = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState('');
-  const [score, setScore] = useState(0);
-  const [showScore, setShowScore] = useState(false);
-  const [timer, setTimer] = useState(30);
-  const [streak, setStreak] = useState(0);
-  const [feedback, setFeedback] = useState('');
+  const [isCorrect, setIsCorrect] = useState(null);
 
-  useEffect(() => {
-    // Fetch and randomize questions
-    const fetchQuestions = async () => {
-      // In a real app, this would be an API call
-      const fetchedQuestions = [
-        {
-          question: "What is the definition of misinformation?",
-          choices: [
-            "False or inaccurate information",
-            "False news",
-            "True news",
-            "Propaganda"
-          ],
-          correctAnswer: "False or inaccurate information"
-        },
-        {
-          question: "What is the Dunning-Kruger effect?",
-          choices: [
-            "A cognitive bias where people with low ability overestimate their ability",
-            "A tendency to overestimate others' competence",
-            "A method for estimating knowledge",
-            "A way to improve skills"
-          ],
-          correctAnswer: "A cognitive bias where people with low ability overestimate their ability"
-        },
-        {
-          question: "What is cherry-picking in propaganda?",
-          choices: [
-            "Selecting only favorable evidence",
-            "Presenting all evidence",
-            "Ignoring contradictory evidence",
-            "Appealing to emotions"
-          ],
-          correctAnswer: "Selecting only favorable evidence"
-        },
-        {
-          question: "What is the bandwagon effect?",
-          choices: [
-            "Adopting beliefs because others do",
-            "Being skeptical of common beliefs",
-            "Standing by personal beliefs",
-            "Resisting popular opinions"
-          ],
-          correctAnswer: "Adopting beliefs because others do"
-        }
-      ];
-      setQuestions(fetchedQuestions.sort(() => Math.random() - 0.5));
-    };
 
-    fetchQuestions();
+  const fetchQuestion = useCallback(async () => {
+    try {
+      const response = await axios.get('/api/question');
+      setQuestion(response.data.question);
+      setChoices(response.data.choices);
+      setIsCorrect(null);
+      setSelectedAnswer('');
+    } catch (error) {
+      console.error('Error fetching question:', error);
+    }
   }, []);
 
   useEffect(() => {
-    if (timer > 0 && !showScore) {
-      const intervalId = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1);
-      }, 1000);
-      return () => clearInterval(intervalId);
-    } else if (timer === 0) {
-      handleAnswerSubmit();
-    }
-  }, [timer, showScore]);
+    fetchQuestion();
+  }, [fetchQuestion]);
 
-  const handleAnswerSelect = (answer) => {
-    setSelectedAnswer(answer);
+  const handleAnswerSubmit = async () => {
+    if (!selectedAnswer) return;
+
+    try {
+      const response = await axios.post('/api/check_answer', {
+        answer: selectedAnswer,
+        correct_answer: choices[0], // Assuming the first choice is always the correct one
+      });
+      setIsCorrect(response.data.correct);
+    } catch (error) {
+      console.error('Error checking answer:', error);
+    }
   };
 
-  const handleAnswerSubmit = () => {
-    const currentQuestionData = questions[currentQuestion];
-    const isCorrect = selectedAnswer === currentQuestionData.correctAnswer;
-
-    if (isCorrect) {
-      setScore(score + 1);
-      setStreak(streak + 1);
-      setHighestStreak(Math.max(highestStreak, streak + 1));
-      setFeedback('Correct!');
-    } else {
-      setStreak(0);
-      setFeedback(`Incorrect. The correct answer was: ${currentQuestionData.correctAnswer}`);
-    }
-
-    const nextQuestion = currentQuestion + 1;
-    if (nextQuestion < questions.length) {
-      setCurrentQuestion(nextQuestion);
-      setSelectedAnswer('');
-      setTimer(TIMER_DURATION);
-    } else {
-      setShowScore(true);
-    }
-
-    toast({
-      title: isCorrect ? "Correct!" : "Incorrect",
-      description: isCorrect ? "Great job!" : `The correct answer was: ${currentQuestionData.correctAnswer}`,
-      variant: isCorrect ? "default" : "destructive",
-    });
+  const handleNextQuestion = () => {
+    fetchQuestion();
   };
-
-  const restartQuiz = () => {
-    setCurrentQuestion(0);
-    setSelectedAnswer('');
-    setScore(0);
-    setShowScore(false);
-    setTimer(TIMER_DURATION);
-    setStreak(0);
-    setHighestStreak(0);
-    setFeedback('');
-    setQuestions(questions.sort(() => Math.random() - 0.5));
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Loading questions...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
-      <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Quiz App</h1>
-          <div className="flex items-center space-x-2">
-            <Sun className="h-4 w-4" />
-            <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
-            <Moon className="h-4 w-4" />
-          </div>
+    <div className="quiz-container">
+      <h2>{question}</h2>
+      <ul>
+        {choices.map((choice, index) => (
+          <li key={choice}>
+            <label htmlFor={`choice-${index}`}>
+              <input
+                id={`choice-${index}`}
+                type="radio"
+                value={choice}
+                checked={selectedAnswer === choice}
+                onChange={(e) => setSelectedAnswer(e.target.value)}
+              />
+              {choice}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <button onClick={handleAnswerSubmit} disabled={!selectedAnswer}>Submit Answer</button>
+      {isCorrect !== null && (
+        <div>
+          <p>{isCorrect ? 'Correct!' : 'Incorrect.'}</p>
+          <button onClick={handleNextQuestion}>Next Question</button>
         </div>
-
-        {!showScore ? (
-          <Card className={`w-full max-w-2xl mx-auto ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
-            <CardHeader>
-              <CardTitle>Question {currentQuestion + 1} of {questions.length}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Progress value={(timer / TIMER_DURATION) * 100} className="mb-4" />
-              <p className="text-lg mb-4">{questions[currentQuestion]?.question}</p>
-              <RadioGroup value={selectedAnswer} onValueChange={handleAnswerSelect}>
-                {questions[currentQuestion]?.choices.map((choice, index) => (
-                  <div key={index} className="flex items-center space-x-2 mb-2">
-                    <RadioGroupItem value={choice} id={`choice-${index}`} />
-                    <Label htmlFor={`choice-${index}`}>{choice}</Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </CardContent>
-            <CardFooter className="flex justify-between items-center">
-              <div>Time left: {timer}s</div>
-              <Button onClick={handleAnswerSubmit} variant={darkMode ? 'outline' : 'default'} disabled={!selectedAnswer}>
-                Submit <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ) : (
-          <Card className={`w-full max-w-2xl mx-auto ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
-            <CardHeader>
-              <CardTitle>Quiz Completed!</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg mb-4">Your score: {score} out of {questions.length}</p>
-              <p className="text-lg mb-4">Accuracy: {((score / questions.length) * 100).toFixed(2)}%</p>
-              <p className="text-lg mb-4">Highest streak: {highestStreak}</p>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button onClick={restartQuiz} variant={darkMode ? 'outline' : 'default'}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Restart Quiz
-              </Button>
-              <Button onClick={() => onComplete(score, questions.length)} variant={darkMode ? 'outline' : 'default'}>
-                Finish <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        )}
-
-        {feedback && (
-          <Alert className={`mt-4 ${feedback.startsWith('Correct') ? (darkMode ? 'bg-green-900' : 'bg-green-100') : (darkMode ? 'bg-red-900' : 'bg-red-100')}`}>
-            <AlertCircle className={`h-4 w-4 ${feedback.startsWith('Correct') ? 'text-green-600' : 'text-red-600'}`} />
-            <AlertTitle>{feedback.startsWith('Correct') ? 'Correct!' : 'Incorrect'}</AlertTitle>
-            <AlertDescription>{feedback}</AlertDescription>
-          </Alert>
-        )}
-      </div>
+      )}
     </div>
   );
 };
 
-export default QuizApp;
+export default QuizUI;

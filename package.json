@@ -1,17 +1,17 @@
 {
-  "name": "my-ngrok-project",
+  "name": "my-quiz-app",
   "version": "1.0.0",
-  "description": "A project using Ngrok for tunneling",
-  "main": "index.js",
+  "description": "An interactive Quiz App",
   "scripts": {
-    "start": "node index.js",
-    "tunnel": "ngrok http 5000"
+    "start": "python main.py",
+    "build": "cd docs && npm run build",
+    "dev": "concurrently \"npm run start\" \"cd docs && npm run start\"",
+    "install-client": "cd docs && npm install",
+    "heroku-postbuild": "npm run install-client && npm run build"
   },
-  "dependencies": {
-    "express": "^4.17.1",
-    "ngrok": "^4.3.0"
+  "devDependencies": {
+    "concurrently": "^6.2.0"
   },
-  "devDependencies": {},
   "engines": {
     "node": ">=14.0.0"
   },

@@ -6,7 +6,7 @@ import os
 from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
 
-app = Flask(__name__, static_folder='build')
+app = Flask(__name__, static_folder='docs/build', static_url_path='')
 CORS(app)
 
 # Database functions
@@ -107,7 +107,7 @@ def create_example_db(db_file):
     else:
         print("Error! Cannot create the database connection.")
 
-# Flask routes
+# Update the route to serve the React app
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
@@ -168,6 +168,7 @@ if __name__ == "__main__":
     create_example_db(db_file)
     
     # Run the Flask app
-    port = 8080  # Change to a less commonly used port
+    port = 5000  # Change to match the proxy in docs/package.json
     print(f"Attempting to start server on port {port}")
     app.run(debug=True, host='0.0.0.0', port=port, threaded=True)
+# In this version of the app, we've added a few more API endpoints to handle quiz questions, answers, and results. The app now includes the following routes:

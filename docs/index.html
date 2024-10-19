@@ -7,27 +7,11 @@
     <meta name="description" content="Challenge yourself with our interactive Quiz App. Test your knowledge on various topics and improve your critical thinking skills.">
     <meta name="keywords" content="quiz, knowledge test, interactive learning, educational app">
     <meta name="author" content="Your Name or Company">
-    <link rel="icon" href="/docs/favicon.ico">
-    <link rel="apple-touch-icon" href="/docs/apple-touch-icon.png">
-    
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/docs/src/index.js" as="script">
-    <link rel="preload" href="/docs/src/App.js" as="script">
-    <link rel="preload" href="/docs/src/components/Header.js" as="script">
-    <link rel="preload" href="/docs/src/components/Footer.js" as="script">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React and ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-    
-    <!-- React Router -->
-    <script src="https://unpkg.com/react-router-dom@5.2.0/umd/react-router-dom.min.js"></script>
-    
-    <!-- Babel for JSX transformation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- Custom styles -->
     <style>
@@ -51,87 +35,13 @@
             66% { content: "..."; }
         }
     </style>
-    
-    <!-- Base tag for GitHub Pages -->
-    <base href="/your-repo-name/">
 </head>
 <body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
     <div id="root">
         <div class="loading">Loading</div>
     </div>
 
-    <!-- Application scripts -->
-    <script type="text/babel" src="/docs/src/index.js"></script>
-    <script type="text/babel" src="/docs/src/App.js"></script>
-    <script type="text/babel" src="/docs/src/components/Header.js"></script>
-    <script type="text/babel" src="/docs/src/components/Footer.js"></script>
-    <script type="text/babel" src="/docs/src/pages/Home.js"></script>
-    <script type="text/babel" src="/docs/src/pages/QuizApp.js"></script>
-    <script type="text/babel" src="/docs/src/pages/Results.js"></script>
-    <script type="text/babel" src="/docs/src/components/NotFound.js"></script>
-
-    <!-- UI Components -->
-    <script type="text/babel" src="/docs/src/components/ui/alert.jsx"></script>
-    <script type="text/babel" src="/docs/src/components/ui/button.jsx"></script>
-    <script type="text/babel" src="/docs/src/components/ui/card.jsx"></script>
-    <script type="text/babel" src="/docs/src/components/ui/label.jsx"></script>
-    <script type="text/babel" src="/docs/src/components/ui/progress.jsx"></script>
-    <script type="text/babel" src="/docs/src/components/ui/radio-group.jsx"></script>
-    <script type="text/babel" src="/docs/src/components/ui/switch.jsx"></script>
-    <script type="text/babel" src="/docs/src/components/ui/toaster.jsx"></script>
-    <script type="text/babel" src="/docs/src/components/ui/use-toast.js"></script>
-
-    <!-- Theme Provider -->
-    <script type="text/babel" src="/docs/src/components/ThemeProvider.js"></script>
-
-    <!-- Initialize the app -->
-    <script type="text/babel">
-        const { BrowserRouter, Route, Switch } = ReactRouterDOM;
-
-        ReactDOM.render(
-            <React.StrictMode>
-                <BrowserRouter basename="/your-repo-name">
-                    <ThemeProvider>
-                        <App />
-                    </ThemeProvider>
-                </BrowserRouter>
-            </React.StrictMode>,
-            document.getElementById('root')
-        );
-    </script>
-
-    <!-- GitHub Pages 404 redirect script -->
-    <script>
-        (function(){
-            var redirect = sessionStorage.redirect;
-            delete sessionStorage.redirect;
-            if (redirect && redirect != location.href) {
-                history.replaceState(null, null, redirect);
-            }
-        })();
-    </script>
-
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/docs/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    }, err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-    </script>
-
-    <!-- Google Analytics (replace UA-XXXXX-Y with your actual tracking ID) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-XXXXX-Y"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'UA-XXXXX-Y');
-    </script>
+    <!-- The bundle.js file will be generated by your React build process -->
+    <script src="/static/js/bundle.js"></script>
 </body>
 </html>
