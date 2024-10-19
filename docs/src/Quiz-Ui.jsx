@@ -87,23 +87,32 @@ const QuizApp = ({ darkMode, toggleDarkMode, onComplete }) => {
 
   const handleAnswerSubmit = () => {
     const currentQuestionData = questions[currentQuestion];
-    if (selectedAnswer === currentQuestionData.correctAnswer) {
+    const isCorrect = selectedAnswer === currentQuestionData.correctAnswer;
+
+    if (isCorrect) {
       setScore(score + 1);
       setStreak(streak + 1);
+      setHighestStreak(Math.max(highestStreak, streak + 1));
       setFeedback('Correct!');
     } else {
       setStreak(0);
-      setFeedback('Incorrect. The correct answer was: ' + currentQuestionData.correctAnswer);
+      setFeedback(`Incorrect. The correct answer was: ${currentQuestionData.correctAnswer}`);
     }
 
     const nextQuestion = currentQuestion + 1;
     if (nextQuestion < questions.length) {
       setCurrentQuestion(nextQuestion);
       setSelectedAnswer('');
-      setTimer(30);
+      setTimer(TIMER_DURATION);
     } else {
       setShowScore(true);
     }
+
+    toast({
+      title: isCorrect ? "Correct!" : "Incorrect",
+      description: isCorrect ? "Great job!" : `The correct answer was: ${currentQuestionData.correctAnswer}`,
+      variant: isCorrect ? "default" : "destructive",
+    });
   };
 
   const restartQuiz = () => {
@@ -111,11 +120,31 @@ const QuizApp = ({ darkMode, toggleDarkMode, onComplete }) => {
     setSelectedAnswer('');
     setScore(0);
     setShowScore(false);
-    setTimer(30);
+    setTimer(TIMER_DURATION);
     setStreak(0);
+    setHighestStreak(0);
     setFeedback('');
     setQuestions(questions.sort(() => Math.random() - 0.5));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        Loading questions...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
@@ -135,7 +164,7 @@ const QuizApp = ({ darkMode, toggleDarkMode, onComplete }) => {
               <CardTitle>Question {currentQuestion + 1} of {questions.length}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Progress value={(timer / 30) * 100} className="mb-4" />
+              <Progress value={(timer / TIMER_DURATION) * 100} className="mb-4" />
               <p className="text-lg mb-4">{questions[currentQuestion]?.question}</p>
               <RadioGroup value={selectedAnswer} onValueChange={handleAnswerSelect}>
                 {questions[currentQuestion]?.choices.map((choice, index) => (
@@ -148,7 +177,7 @@ const QuizApp = ({ darkMode, toggleDarkMode, onComplete }) => {
             </CardContent>
             <CardFooter className="flex justify-between items-center">
               <div>Time left: {timer}s</div>
-              <Button onClick={handleAnswerSubmit} variant={darkMode ? 'outline' : 'default'}>
+              <Button onClick={handleAnswerSubmit} variant={darkMode ? 'outline' : 'default'} disabled={!selectedAnswer}>
                 Submit <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </CardFooter>
@@ -161,7 +190,7 @@ const QuizApp = ({ darkMode, toggleDarkMode, onComplete }) => {
             <CardContent>
               <p className="text-lg mb-4">Your score: {score} out of {questions.length}</p>
               <p className="text-lg mb-4">Accuracy: {((score / questions.length) * 100).toFixed(2)}%</p>
-              <p className="text-lg mb-4">Highest streak: {streak}</p>
+              <p className="text-lg mb-4">Highest streak: {highestStreak}</p>
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button onClick={restartQuiz} variant={darkMode ? 'outline' : 'default'}>

@@ -8,8 +8,10 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: "bg-background text-foreground",
-        destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+        info: "bg-blue-50 text-blue-700 border-blue-200",
+        success: "bg-green-50 text-green-700 border-green-200",
+        warning: "bg-yellow-50 text-yellow-700 border-yellow-200",
       },
     },
     defaultVariants: {
@@ -18,32 +20,56 @@ const alertVariants = cva(
   }
 )
 
-const Alert = React.forwardRef(({ className, variant, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
-))
+const Alert = React.forwardRef(({ className, variant, icon, children, ...props }, ref) => {
+  const Icon = icon
+
+  return (
+    <div
+      ref={ref}
+      role="alert"
+      className={cn(alertVariants({ variant }), className)}
+      {...props}
+    >
+      {Icon && <Icon className="h-4 w-4" />}
+      <div className="flex flex-col space-y-1">
+        {children}
+      </div>
+    </div>
+  )
+})
 Alert.displayName = "Alert"
 
-const AlertTitle = React.forwardRef(({ className, ...props }, ref) => (
+const AlertTitle = React.forwardRef(({ className, children, ...props }, ref) => (
   <h5
     ref={ref}
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
+    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
     {...props}
-  />
+  >
+    {children}
+  </h5>
 ))
 AlertTitle.displayName = "AlertTitle"
 
-const AlertDescription = React.forwardRef(({ className, ...props }, ref) => (
+const AlertDescription = React.forwardRef(({ className, children, ...props }, ref) => (
   <div
     ref={ref}
     className={cn("text-sm [&_p]:leading-relaxed", className)}
     {...props}
-  />
+  >
+    {children}
+  </div>
 ))
 AlertDescription.displayName = "AlertDescription"
 
-export { Alert, AlertTitle, AlertDescription }
+const AlertActions = React.forwardRef(({ className, children, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn("mt-3 flex items-center space-x-2", className)}
+    {...props}
+  >
+    {children}
+  </div>
+))
+AlertActions.displayName = "AlertActions"
+
+export { Alert, AlertTitle, AlertDescription, AlertActions }
