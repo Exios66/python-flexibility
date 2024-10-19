@@ -1,0 +1,59 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Python virtual environment
+venv/
+
+# Flask
+instance/
+*.pyc
+__pycache__/
+
+# SQLite database
+*.db
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Compiled Python files
+*.pyc
+
+# Compiled JavaScript files
+*.min.js
+
+# Dependency directories
+bower_components/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Pytest cache
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
