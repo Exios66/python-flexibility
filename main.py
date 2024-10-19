@@ -1,6 +1,12 @@
 import sqlite3
 import random
 import time
+import csv
+import os
+
+# Create /csv subfolder if it doesn't exist
+if not os.path.exists("csv"):
+    os.makedirs("csv")
 
 # Connect to database
 def create_connection(db_file):
@@ -25,21 +31,61 @@ def check_answer(user_answer, correct_answer):
 # Add a timer for responses
 def timer():
     start_time = time.time()
-    input_answer = input("Your answer: ").strip()
+    input_answer = input("Your answer (1-4): ").strip()
     elapsed_time = time.time() - start_time
     return input_answer, elapsed_time
+
+# Calculate the user's final score based on streaks, accuracy, and difficulty progression
+def calculate_score(streak, total_questions, correct_answers, avg_time_per_question, highest_difficulty):
+    accuracy = (correct_answers / total_questions) * 100
+    score_category = ""
+
+    # Novice Category
+    if accuracy <= 50 and highest_difficulty <= 3 and streak <= 2:
+        score_category = "Novice"
+    # Intermediate Category
+    elif 51 <= accuracy <= 80 and highest_difficulty <= 7 and 3 <= streak <= 5:
+        score_category = "Intermediate"
+    # Expert Category
+    elif accuracy > 80 and highest_difficulty > 7 and streak > 6:
+        score_category = "Expert"
+
+    # Additional feedback based on time per question
+    if avg_time_per_question > 30:
+        time_feedback = "You're taking a bit longer to respond. Try to build confidence and improve your speed."
+    elif 15 <= avg_time_per_question <= 30:
+        time_feedback = "You're answering at a consistent pace. Keep practicing to increase your speed."
+    else:
+        time_feedback = "Great speed! You're answering quickly and efficiently."
+
+    return score_category, time_feedback, accuracy
+
+# Store user results in CSV file
+def store_results_in_csv(user_id, score_category, accuracy, streak, highest_difficulty, avg_time_per_question):
+    csv_file = "csv/responses.csv"
+    file_exists = os.path.isfile(csv_file)
+
+    with open(csv_file, mode="a", newline="") as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(["ID#", "Score Category", "Accuracy (%)", "Max Streak", "Highest Difficulty", "Average Time Per Question (s)"])
+        
+        writer.writerow([user_id, score_category, f"{accuracy:.2f}", streak, highest_difficulty, f"{avg_time_per_question:.2f}"])
 
 # Main function to handle the quiz logic with multiple-choice
 def quiz(conn):
     streak = 0
+    total_questions = 0
+    correct_answers = 0
+    total_time = 0
     difficulty_level = 0  # Start at the easiest level (0-10%)
-    max_streak = 0
+    highest_difficulty = 0
     
     while True:
         print(f"\nCurrent difficulty: {difficulty_level * 10}%-{(difficulty_level + 1) * 10}%")
-        print(f"Current streak: {streak}, Highest streak: {max_streak}")
+        print(f"Current streak: {streak}")
         
-        # Fetch a question with multiple choice options
+        # Fetch a question with multiple-choice options
         question_data = fetch_question(conn, difficulty_level)
         
         if not question_data:
@@ -61,25 +107,51 @@ def quiz(conn):
         try:
             user_answer = choices[int(user_choice) - 1]  # Get selected choice
         except (ValueError, IndexError):
-            print("Invalid selection.")
+            print("Invalid selection. Please choose a number between 1 and 4.")
             continue
         
         # Check the answer
         if check_answer(user_answer, correct_answer):
             print(f"Correct! (Time taken: {response_time:.2f} seconds)")
             streak += 1
-            max_streak = max(max_streak, streak)
-            # Adjust difficulty more randomly
-            difficulty_level = min(9, difficulty_level + random.choice([1, 2]))
+            correct_answers += 1
         else:
             print(f"Incorrect! The correct answer was: {correct_answer}")
             streak = max(0, streak - 1)  # Decrease streak gently
+        
+        total_questions += 1
+        total_time += response_time
+        highest_difficulty = max(highest_difficulty, difficulty_level)
+
+        # Adjust difficulty more randomly
+        if correct_answers >= 1:
+            difficulty_level = min(9, difficulty_level + random.choice([1, 2]))
+        else:
             difficulty_level = max(0, difficulty_level - 1)
         
         # End or continue based on user input
         cont = input("Continue? (y/n): ").strip().lower()
         if cont != 'y':
             break
+    
+    if total_questions > 0:
+        # Calculate average time per question
+        avg_time_per_question = total_time / total_questions
+        
+        # Calculate final score
+        score_category, time_feedback, accuracy = calculate_score(streak, total_questions, correct_answers, avg_time_per_question, highest_difficulty)
+        
+        # Assign a user ID and store results in CSV
+        user_id = random.randint(1000, 9999)  # Randomly generated ID for now
+        store_results_in_csv(user_id, score_category, accuracy, streak, highest_difficulty, avg_time_per_question)
+        
+        # Display final results
+        print(f"\nYour performance is classified as: {score_category}")
+        print(f"Your accuracy: {accuracy:.2f}%")
+        print(f"Your max streak: {streak}")
+        print(f"Your highest difficulty reached: {highest_difficulty}")
+        print(f"Your average time per question: {avg_time_per_question:.2f} seconds")
+        print(time_feedback)
 
 # Example database creation for testing with multiple-choice questions
 def create_example_db(db_file):
@@ -99,25 +171,10 @@ def create_example_db(db_file):
     
     # Insert some sample questions with different difficulty levels and choices
     questions = [
-        # Easy questions (difficulty 0-1)
         ("What is the definition of misinformation?", "False or inaccurate information", "False news", "True news", "Propaganda", 0),
-        ("What is the term for news stories that are intentionally misleading?", "Fake news", "Misinformation", "Propaganda", "Clickbait", 0),
-        
-        # Medium questions (difficulty 2-3)
         ("What is the Dunning-Kruger effect?", "A cognitive bias where people with low ability overestimate their ability", "A tendency to overestimate others' competence", "A method for estimating knowledge", "A way to improve skills", 2),
-        ("Which fallacy occurs when one uses fear to influence an opinion?", "Appeal to fear", "Ad hominem", "Appeal to authority", "Red herring", 3),
-        
-        # Intermediate questions (difficulty 4-5)
-        ("What is cognitive dexterity?", "The ability to think and react quickly and flexibly", "The ability to multitask", "Mental agility in physical tasks", "Quick problem solving", 4),
-        ("What is cherry-picking in propaganda?", "Selecting only favorable evidence", "Presenting all evidence", "Ignoring contradictory evidence", "Appealing to emotions", 5),
-        
-        # Challenging questions (difficulty 6-7)
-        ("What is the red herring fallacy?", "A distraction from the main issue", "An irrelevant conclusion", "A false cause", "Appeal to authority", 6),
-        ("How does cognitive dissonance relate to belief perseverance?", "Holding conflicting beliefs while maintaining existing ones", "Quickly adapting to new information", "Resisting changes in belief systems", "Balancing between opposite opinions", 7),
-        
-        # Hard questions (difficulty 8-9)
-        ("What is the bandwagon effect?", "Adopting beliefs because others do", "Being skeptical of common beliefs", "Choosing beliefs based on authority", "A group formed to debate ideas", 8),
-        ("What is source amnesia?", "Forgetting where information was learned", "Misremembering facts", "Focusing only on important sources", "Relying on unverified sources", 9),
+        ("What is cherry-picking in propaganda?", "Selecting only favorable evidence", "Presenting all evidence", "Ignoring contradictory evidence", "Appealing to emotions", 4),
+        ("What is the bandwagon effect?", "Adopting beliefs because others do", "Being skeptical of common beliefs", "Standing by personal beliefs", "Resisting popular opinions", 8),
     ]
     
     cur.executemany("INSERT INTO questions (question, correct_answer, choice_1, choice_2, choice_3, difficulty_level) VALUES (?, ?, ?, ?, ?, ?)", questions)
