@@ -51,7 +51,7 @@ class LoginForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Sign Up')
 
@@ -92,6 +92,7 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 @app.route('/logout')
+@login_required
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
@@ -114,7 +115,31 @@ def register():
 @app.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html', title='Profile')
+    return render_template('profile.html', title='Profile', user=current_user)
+
+@app.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.check_password(form.old_password.data):
+            current_user.set_password(form.new_password.data)
+            db.session.commit()
+            flash('Your password has been updated!', 'success')
+            return redirect(url_for('profile'))
+        else:
+            flash('Invalid old password.', 'danger')
+    return render_template('change_password.html', title='Change Password', form=form)
+
+@app.route('/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    user = current_user
+    logout_user()
+    db.session.delete(user)
+    db.session.commit()
+    flash('Your account has been deleted.', 'info')
+    return redirect(url_for('index'))
 
 @app.errorhandler(404)
 def not_found_error(error):
